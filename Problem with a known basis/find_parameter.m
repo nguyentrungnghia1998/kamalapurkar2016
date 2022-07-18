@@ -63,7 +63,7 @@ for i = 2:length(t)
             S_old = min(svd(Xk_old'));
             S = zeros(p,1);
             for j = 1:p
-                Xk_old(:,j) = xm(i);
+                Xk_old(:,j) = xm(:,i);
                 S(j) = min(svd(Xk_old'));
                 Xk_old = T;
             end
