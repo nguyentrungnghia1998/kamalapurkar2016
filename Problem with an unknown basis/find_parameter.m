@@ -11,7 +11,7 @@ theta = cell(1,length(t));
 R = eye(2);
 eps = 0.005;
 GAMMA_theta = diag([90 50 160 50]);
-k_theta = 1;
+k_theta = 1.5;
 %% Initial value 
 x{1} = [1;1;0;0];
 Wa_first = [5;5;0;0;0;0;25;0;2;2];
@@ -33,20 +33,13 @@ end
 xm = cell2mat(x);
 um = cell2mat(u);
 plot(t,xm);
-[b_golay, g_golay] = sgolay(3,5);
 dxm = zeros(size(xm));
-dxm(1,:) = conv(xm(1,:),1/-Step * g_golay(:,2),'same');
-dxm(2,:) = conv(xm(2,:),1/-Step * g_golay(:,2),'same');
-dxm(3,:) = conv(xm(3,:),1/-Step * g_golay(:,2),'same');
-dxm(4,:) = conv(xm(4,:),1/-Step * g_golay(:,2),'same');
-dxm(1,1:2) = dxm(1,3);
-dxm(2,1:2) = dxm(2,3);
-dxm(3,1:2) = dxm(3,3);
-dxm(4,1:2) = dxm(4,3);
-dxm(1,end-1:end)=dxm(1,end-2);
-dxm(2,end-1:end)=dxm(2,end-2);
-dxm(3,end-1:end)=dxm(3,end-2);
-dxm(4,end-1:end)=dxm(4,end-2);
+dxm(1,:) = xm(3,:);
+dxm(2,:) = xm(4,:);
+k3 = diff(xm(3,:))/0.001;
+k4 = diff(xm(4,:))/0.001;
+dxm(3,:) = [k3 k3(end)];
+dxm(4,:) = [k4 k4(end)];
 l = 1;
 p = 1;
 p_ = 30;
@@ -97,5 +90,12 @@ for i = 2:length(t)
     theta{i+1} = theta{i} + Step * dtheta;
 end
 
-        theta_m = cell2mat(theta);
-        plot(t,theta_m);
+theta_m = cell2mat(theta);
+plot(t,theta_m);
+legend('f_{d1}','f_{d2}','f_{s1}','f_{s2}');
+xlabel('Time (s)');
+ylabel('$$\hat{\theta}(t)$$','Interpreter','latex');
+title('Unknown Parameters in Drift Dynamics');
+
+theta_approximate = theta{end};
+save('theta_approximate.mat','theta_approximate');
