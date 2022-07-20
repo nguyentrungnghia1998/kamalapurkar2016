@@ -2,7 +2,7 @@
 clc; clear ; close all
 %% Time step 
 Step = 0.001;
-T_end = 10;
+T_end = 50;
 t= 0:Step:T_end;
 %% Variable
 x = cell(1,length(t));
@@ -20,7 +20,7 @@ R = eye(2);
 Q = diag([10 10 1 1]);
 eps = 0.5;
 eta_c1 = 1;
-eta_c2 = 1;
+eta_c2 = 10;
 nuy = 0.0005;
 %% Initial value
 Wc{1} = [5;5;0;0;0;0;25;0;2;2];
@@ -29,6 +29,7 @@ GAMMA{1} = 1000*eye(10);
 Xk = zeros(4,p_);
 Uk = zeros(2,p_);
 dXk = zeros(4,p_);
+dau = 1;
 %% Simulation
 for i = 1:length(t)
     g = g_function(x{i});
@@ -40,6 +41,9 @@ for i = 1:length(t)
     if min(eig(GAMMA{i}))<1
         GAMMA{i} = GAMMA{1};
     end
+    if norm(x{i})>10
+        Wc{i} = Wc{dau};
+    end
     if p==0
         p = p+1;
         l = p;
@@ -49,7 +53,7 @@ for i = 1:length(t)
     else
         Xk_old = Xk(:,1:p);
         Xk_new = [Xk_old x{i}];
-        if (norm(x{i}-Xk(:,l))^2/norm(x{i})>=eps)||(rank(Xk_new)>rank(Xk_old))
+        if ((norm(x{i}-Xk(:,l))^2/norm(x{i})>=eps)||(rank(Xk_new)>rank(Xk_old))) && (norm(x{i})<3)
             if p<p_
                 p = p+1;
                 l = p;
@@ -95,6 +99,9 @@ for i = 1:length(t)
     end
     %% Update state, Wc, GAMMA
     x{i+1} = x{i} + Step * real_model(x{i},u{i});
+    if norm(x{i+1})<norm(x{i})
+        dau = i+1;
+    end
     GAMMA{i+1} = GAMMA{i} + Step * dGAMMA;
     Wc{i+1} = Wc{i} + Step*dWc;
 end
